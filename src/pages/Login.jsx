@@ -112,7 +112,7 @@ export default function Login() {
 
         {/* Bottom: Trusted by */}
         <p style={{ fontSize: '12px', color: '#3b82f6' }}>
-          Trusted by 500+ companies across Africa
+          Trusted by 500+ companies across Asia
         </p>
         </div>{/* end z-index wrapper */}
       </div>

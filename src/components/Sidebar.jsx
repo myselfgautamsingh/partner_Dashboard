@@ -1,17 +1,25 @@
 ﻿import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Users, FileUp, FileBarChart2, CreditCard,
-  Building2, LogOut, ChevronLeft, ChevronRight
+  Building2, LogOut, ChevronLeft, ChevronRight,
+  Package, User, BookOpen, Key
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const navItems = [
+const mainNavItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/enrollment", icon: Users, label: "Enrollment" },
   { to: "/uploads", icon: FileUp, label: "Data Uploads" },
   { to: "/claims", icon: FileBarChart2, label: "Claims" },
   { to: "/payments", icon: CreditCard, label: "Payments" },
   { to: "/branches", icon: Building2, label: "Branch Performance" },
+];
+
+const secondaryNavItems = [
+  { to: "/products", icon: Package,  label: "Products" },
+  { to: "/account",  icon: User,     label: "Account" },
+  { to: "/api-docs", icon: BookOpen, label: "API Docs" },
+  { to: "/api-keys", icon: Key,      label: "API Keys" },
 ];
 
 export default function Sidebar({ collapsed, onToggle }) {
@@ -70,12 +78,39 @@ export default function Sidebar({ collapsed, onToggle }) {
       )}
 
       {/* Nav items */}
-      <nav style={{ flex: 1, padding: "8px 10px", display: "flex", flexDirection: "column", gap: "2px" }}>
-        {navItems.map(({ to, icon: Icon, label }) => (
+      <nav style={{ flex: 1, padding: "8px 10px", display: "flex", flexDirection: "column", gap: "2px", overflowY: "auto" }}>
+        {mainNavItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === "/"}
+            style={({ isActive }) => ({
+              display: "flex", alignItems: "center",
+              gap: "12px", padding: collapsed ? "10px" : "10px 12px",
+              borderRadius: "10px", textDecoration: "none",
+              fontSize: "13.5px", fontWeight: isActive ? "600" : "500",
+              color: isActive ? "white" : "#64748b",
+              background: isActive ? "linear-gradient(135deg, #3b82f6, #6366f1)" : "transparent",
+              boxShadow: isActive ? "0 4px 14px rgba(99,102,241,0.35)" : "none",
+              transition: "all 0.15s ease",
+              justifyContent: collapsed ? "center" : "flex-start",
+            })}
+            onMouseEnter={e => { if (!e.currentTarget.style.background.includes("gradient")) { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#e2e8f0"; }}}
+            onMouseLeave={e => { if (!e.currentTarget.style.background.includes("gradient")) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#64748b"; }}}
+          >
+            <Icon size={17} style={{ flexShrink: 0 }} />
+            {!collapsed && <span style={{ whiteSpace: "nowrap", overflow: "hidden" }}>{label}</span>}
+          </NavLink>
+        ))}
+
+        {/* Separator */}
+        <div style={{ margin: "10px 4px", borderTop: "1px solid rgba(255,255,255,0.06)" }}></div>
+        {!collapsed && <div style={{ padding: "0 8px 6px", fontSize: "10px", fontWeight: "600", color: "#334155", letterSpacing: "0.1em", textTransform: "uppercase" }}>Developer</div>}
+
+        {secondaryNavItems.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
             style={({ isActive }) => ({
               display: "flex", alignItems: "center",
               gap: "12px", padding: collapsed ? "10px" : "10px 12px",

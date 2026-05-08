@@ -8,6 +8,10 @@ import Uploads from "./pages/Uploads";
 import Claims from "./pages/Claims";
 import Payments from "./pages/Payments";
 import Branches from "./pages/Branches";
+import Products from "./pages/Products";
+import Account from "./pages/Account";
+import ApiDocs from "./pages/ApiDocs";
+import ApiKeys from "./pages/ApiKeys";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -36,6 +40,10 @@ function AppRoutes() {
         <Route path="claims" element={<Claims />} />
         <Route path="payments" element={<Payments />} />
         <Route path="branches" element={<Branches />} />
+        <Route path="products" element={<Products />} />
+        <Route path="account" element={<Account />} />
+        <Route path="api-docs" element={<ApiDocs />} />
+        <Route path="api-keys" element={<ApiKeys />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
