@@ -16,7 +16,7 @@ export default function Login() {
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -67,7 +67,7 @@ export default function Login() {
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '48px' }}>
             <div style={{
-              width: '48px', height: '48px', borderRadius: '12px',
+              width: '48px', height: '48px', borderRadius: '0',
               backgroundColor: 'white', display: 'flex', alignItems: 'center',
               justifyContent: 'center', fontWeight: '800', fontSize: '15px', color: '#3b82f6',
               flexShrink: 0, overflow: 'hidden',
@@ -96,7 +96,7 @@ export default function Login() {
             {features.map((f) => (
               <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '14px', color: '#d1d5db' }}>
                 <span style={{
-                  width: '22px', height: '22px', borderRadius: '50%',
+                  width: '22px', height: '22px', borderRadius: '0',
                   backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', flexShrink: 0,
                 }}>
@@ -134,7 +134,7 @@ export default function Login() {
           </p>
 
           {error && (
-            <div style={{ marginBottom: '20px', padding: '12px 16px', borderRadius: '8px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', fontSize: '14px' }}>
+            <div style={{ marginBottom: '20px', padding: '12px 16px', borderRadius: '0', backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', fontSize: '14px' }}>
               {error}
             </div>
           )}
@@ -151,7 +151,7 @@ export default function Login() {
                 placeholder="you@company.com"
                 style={{
                   width: '100%', padding: '10px 12px', border: '1px solid #d1d5db',
-                  borderRadius: '6px', fontSize: '14px', color: '#111827',
+                  borderRadius: '0', fontSize: '14px', color: '#111827',
                   outline: 'none', boxSizing: 'border-box', backgroundColor: 'white',
                 }}
                 onFocus={e => e.target.style.borderColor = '#3b82f6'}
@@ -171,7 +171,7 @@ export default function Login() {
                   placeholder="••••••••"
                   style={{
                     width: '100%', padding: '10px 50px 10px 12px', border: '1px solid #d1d5db',
-                    borderRadius: '6px', fontSize: '14px', color: '#111827',
+                    borderRadius: '0', fontSize: '14px', color: '#111827',
                     outline: 'none', boxSizing: 'border-box', backgroundColor: 'white',
                   }}
                   onFocus={e => e.target.style.borderColor = '#3b82f6'}
@@ -209,13 +209,13 @@ export default function Login() {
               disabled={loading}
               style={{
                 width: '100%', padding: '11px', backgroundColor: '#22d3ee',
-                color: 'white', border: 'none', borderRadius: '6px',
+                color: 'white', border: 'none', borderRadius: '0',
                 fontSize: '14px', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               }}
             >
               {loading
-                ? <span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }}></span>
+                ? <span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '0', display: 'inline-block', animation: 'spin 0.7s linear infinite' }}></span>
                 : 'Sign In to Partner Portal'
               }
             </button>
@@ -231,9 +231,18 @@ export default function Login() {
           {/* Google */}
           <button
             type="button"
+            onClick={async () => {
+              setError('');
+              try {
+                await loginWithGoogle();
+                navigate('/');
+              } catch (err) {
+                setError('Google sign-in failed. Make sure Google is enabled in Firebase.');
+              }
+            }}
             style={{
               width: '100%', padding: '10px', border: '1px solid #e5e7eb',
-              borderRadius: '6px', fontSize: '14px', fontWeight: '500',
+              borderRadius: '0', fontSize: '14px', fontWeight: '500',
               color: '#374151', backgroundColor: 'white', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
             }}

@@ -8,6 +8,9 @@ import Uploads from "./pages/Uploads";
 import Claims from "./pages/Claims";
 import Payments from "./pages/Payments";
 import Branches from "./pages/Branches";
+import Members from "./pages/Members";
+import Notifications from "./pages/Notifications";
+import Renewals from "./pages/Renewals";
 import Products from "./pages/Products";
 import Account from "./pages/Account";
 import ApiDocs from "./pages/ApiDocs";
@@ -40,6 +43,9 @@ function AppRoutes() {
         <Route path="claims" element={<Claims />} />
         <Route path="payments" element={<Payments />} />
         <Route path="branches" element={<Branches />} />
+        <Route path="members" element={<Members />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="renewals" element={<Renewals />} />
         <Route path="products" element={<Products />} />
         <Route path="account" element={<Account />} />
         <Route path="api-docs" element={<ApiDocs />} />

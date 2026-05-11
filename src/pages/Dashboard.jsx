@@ -21,14 +21,14 @@ const activityIcons = {
 };
 
 const card = {
-  background: "white", borderRadius: "16px", padding: "22px",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)",
-  border: "1px solid rgba(0,0,0,0.05)",
+  background: "white", borderRadius: "8px", padding: "16px 18px",
+  boxShadow: "0 1px 2px rgba(16,24,40,0.06)",
+  border: "1px solid #e2e8f0",
 };
 
 const tooltipStyle = {
-  contentStyle: { borderRadius: "10px", border: "none", boxShadow: "0 8px 30px rgba(0,0,0,0.12)", fontSize: "12px", padding: "10px 14px" },
-  cursor: { fill: "rgba(99,102,241,0.05)" },
+  contentStyle: { borderRadius: "6px", border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", fontSize: "12px", padding: "8px 12px" },
+  cursor: { fill: "rgba(99,102,241,0.04)" },
 };
 
 export default function Dashboard() {
@@ -39,94 +39,97 @@ export default function Dashboard() {
     { name: "Rejected", value: d.claimsStats.rejectedClaims },
   ];
 
+  const btnBase = { display: "flex", alignItems: "center", gap: "5px", padding: "6px 14px", fontSize: "12px", fontWeight: "500", borderRadius: "6px", cursor: "pointer", border: "1px solid #e2e8f0" };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <h2 style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a", margin: 0 }}>Overview</h2>
-          <p style={{ fontSize: "13px", color: "#94a3b8", marginTop: "3px" }}>Your performance summary this period</p>
+          <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#0f172a", margin: 0 }}>Portfolio Overview</h2>
+          <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "2px" }}>Performance summary — current period</p>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button style={{ padding: "8px 16px", fontSize: "13px", fontWeight: "600", color: "#64748b", border: "1px solid #e2e8f0", borderRadius: "10px", background: "white", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
-            <ArrowUpRight size={14} /> Share
+        <div style={{ display: "flex", gap: "6px" }}>
+          <button style={{ ...btnBase, background: "white", color: "#475569" }}>
+            <ArrowUpRight size={13} /> Share
           </button>
-          <button style={{ padding: "8px 16px", fontSize: "13px", fontWeight: "600", color: "white", background: "linear-gradient(135deg, #3b82f6, #6366f1)", border: "none", borderRadius: "10px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", boxShadow: "0 4px 14px rgba(99,102,241,0.35)" }}>
-            <Upload size={14} /> Export
+          <button style={{ ...btnBase, background: "#0f172a", color: "white", border: "none" }}>
+            <Upload size={13} /> Export
           </button>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
         <KPICard label="Total Customers" value={d.summary.totalCustomers.value} trend={d.summary.totalCustomers.trend} icon={Users} color="blue" />
         <KPICard label="Active Policies" value={d.summary.activePolicies.value} trend={d.summary.activePolicies.trend} icon={Shield} color="green" />
         <KPICard label="Premium Collected" value={d.summary.premiumCollected.value} trend={d.summary.premiumCollected.trend} prefix="$" icon={DollarSign} color="purple" />
         <KPICard label="Claims Ratio" value={d.summary.claimsRatio.value} trend={d.summary.claimsRatio.trend} suffix="%" icon={Activity} color="orange" />
       </div>
 
-      {/* Row 2: Enrollment chart + Claims donut */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "16px" }}>
+      {/* Row 2: Enrollment chart + right panel */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "12px" }}>
 
         {/* Enrollment area chart */}
         <div style={card}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
             <div>
-              <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0 }}>Enrollment Trend</h3>
-              <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "3px" }}>Monthly new customers vs amendments</p>
+              <h3 style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: 0 }}>Enrollment Trend</h3>
+              <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>New customers vs amendments — monthly</p>
             </div>
-            <div style={{ display: "flex", gap: "14px", fontSize: "11px", color: "#64748b" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <span style={{ width: "10px", height: "3px", background: "#6366f1", borderRadius: "2px", display: "inline-block" }}></span> New
-              </span>
-              <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <span style={{ width: "10px", height: "3px", background: "#10b981", borderRadius: "2px", display: "inline-block" }}></span> Amendments
-              </span>
+            <div style={{ display: "flex", gap: "12px" }}>
+              {[{ label: "New", color: "#6366f1" }, { label: "Amendments", color: "#10b981" }].map(l => (
+                <span key={l.label} style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#64748b" }}>
+                  <span style={{ width: "16px", height: "2px", background: l.color, display: "inline-block", borderRadius: "1px" }} />{l.label}
+                </span>
+              ))}
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={210}>
-            <AreaChart data={d.enrollmentMonthly} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={d.enrollmentMonthly} margin={{ top: 2, right: 4, left: -22, bottom: 0 }}>
               <defs>
                 <linearGradient id="gNew" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity={0.2} />
+                  <stop offset="0%" stopColor="#6366f1" stopOpacity={0.15} />
                   <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gAmend" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.15} />
                   <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="2 4" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
               <Tooltip {...tooltipStyle} />
-              <Area type="monotone" dataKey="newCustomers" stroke="#6366f1" strokeWidth={2.5} fill="url(#gNew)" dot={false} name="New" />
-              <Area type="monotone" dataKey="amendments" stroke="#10b981" strokeWidth={2.5} fill="url(#gAmend)" dot={false} name="Amendments" />
+              <Area type="monotone" dataKey="newCustomers" stroke="#6366f1" strokeWidth={1.5} fill="url(#gNew)" dot={false} name="New" />
+              <Area type="monotone" dataKey="amendments" stroke="#10b981" strokeWidth={1.5} fill="url(#gAmend)" dot={false} name="Amendments" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Claims donut */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ ...card, background: "linear-gradient(140deg, #1e293b 0%, #0f172a 100%)", flex: 1 }}>
-            <h3 style={{ fontSize: "13px", fontWeight: "600", color: "#94a3b8", margin: "0 0 16px" }}>Claims Summary</h3>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <ResponsiveContainer width={100} height={100}>
+        {/* Right panel: Claims + Upload stats */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+
+          {/* Claims donut */}
+          <div style={{ ...card, background: "#0f172a", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <p style={{ fontSize: "11px", fontWeight: "600", color: "#475569", margin: "0 0 12px", letterSpacing: "0.05em", textTransform: "uppercase" }}>Claims Summary</p>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <ResponsiveContainer width={80} height={80}>
                 <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={46} dataKey="value" strokeWidth={2} stroke="#0f172a">
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={24} outerRadius={38} dataKey="value" strokeWidth={1} stroke="#0f172a">
                     {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
                 {pieData.map((item, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-                      <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: PIE_COLORS[i], display: "inline-block", flexShrink: 0 }}></span>
-                      <span style={{ fontSize: "12px", color: "#94a3b8" }}>{item.name}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: PIE_COLORS[i], display: "inline-block", flexShrink: 0 }} />
+                      <span style={{ fontSize: "11px", color: "#64748b" }}>{item.name}</span>
                     </div>
-                    <span style={{ fontSize: "13px", fontWeight: "700", color: "white" }}>{item.value}</span>
+                    <span style={{ fontSize: "12px", fontWeight: "600", color: "#e2e8f0", fontVariantNumeric: "tabular-nums" }}>{item.value}</span>
                   </div>
                 ))}
               </div>
@@ -135,19 +138,19 @@ export default function Dashboard() {
 
           {/* Upload stats */}
           <div style={card}>
-            <h3 style={{ fontSize: "13px", fontWeight: "700", color: "#0f172a", margin: "0 0 14px" }}>Upload Stats</h3>
+            <p style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", margin: "0 0 10px", letterSpacing: "0.05em", textTransform: "uppercase" }}>Upload Stats</p>
             {[
-              { label: "Files Uploaded", value: d.uploadStats.filesUploaded, bg: "#eff6ff", color: "#3b82f6", icon: <Upload size={12} /> },
-              { label: "Records Processed", value: d.uploadStats.uploadedRecords.toLocaleString(), bg: "#f0fdf4", color: "#10b981", icon: <CheckCircle size={12} /> },
-              { label: "Rejected", value: d.uploadStats.rejectedRecords, bg: "#fef2f2", color: "#ef4444", icon: <XCircle size={12} /> },
-              { label: "Pending Payment", value: d.uploadStats.pendingPayment, bg: "#fff7ed", color: "#f59e0b", icon: <Clock size={12} /> },
-            ].map(({ label, value, bg, color, icon }) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ width: "24px", height: "24px", borderRadius: "7px", background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{icon}</span>
-                  <span style={{ fontSize: "12px", color: "#64748b" }}>{label}</span>
+              { label: "Files Uploaded",    value: d.uploadStats.filesUploaded,                    color: "#3b82f6" },
+              { label: "Records Processed", value: d.uploadStats.uploadedRecords.toLocaleString(),  color: "#10b981" },
+              { label: "Rejected",          value: d.uploadStats.rejectedRecords,                   color: "#ef4444" },
+              { label: "Pending Payment",   value: d.uploadStats.pendingPayment,                    color: "#f59e0b" },
+            ].map(({ label, value, color }) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #f8fafc" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+                  <span style={{ width: "3px", height: "14px", borderRadius: "2px", background: color, display: "inline-block", flexShrink: 0 }} />
+                  <span style={{ fontSize: "12px", color: "#475569" }}>{label}</span>
                 </div>
-                <span style={{ fontSize: "13px", fontWeight: "700", color: "#0f172a" }}>{value}</span>
+                <span style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a", fontVariantNumeric: "tabular-nums" }}>{value}</span>
               </div>
             ))}
           </div>
@@ -155,44 +158,46 @@ export default function Dashboard() {
       </div>
 
       {/* Row 3: Payments bar + Activity */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
 
         {/* Payments bar chart */}
         <div style={card}>
-          <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 4px" }}>Payments Overview</h3>
-          <p style={{ fontSize: "12px", color: "#94a3b8", margin: "0 0 20px" }}>Monthly collected vs pending vs rejected</p>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={d.paymentsMonthly} margin={{ top: 0, right: 5, left: -20, bottom: 0 }} barSize={7} barGap={3}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+          <div style={{ marginBottom: "12px" }}>
+            <h3 style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: 0 }}>Payments Overview</h3>
+            <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>Monthly collected vs pending vs rejected</p>
+          </div>
+          <ResponsiveContainer width="100%" height={170}>
+            <BarChart data={d.paymentsMonthly} margin={{ top: 0, right: 4, left: -22, bottom: 0 }} barSize={6} barGap={2}>
+              <CartesianGrid strokeDasharray="2 4" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
               <Tooltip {...tooltipStyle} />
-              <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
-              <Bar dataKey="collected" fill="#6366f1" radius={[4, 4, 0, 0]} name="Collected" />
-              <Bar dataKey="pending" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Pending" />
-              <Bar dataKey="rejected" fill="#ef4444" radius={[4, 4, 0, 0]} name="Rejected" />
+              <Legend iconType="square" iconSize={6} wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
+              <Bar dataKey="collected" fill="#6366f1" radius={[2, 2, 0, 0]} name="Collected" />
+              <Bar dataKey="pending" fill="#f59e0b" radius={[2, 2, 0, 0]} name="Pending" />
+              <Bar dataKey="rejected" fill="#ef4444" radius={[2, 2, 0, 0]} name="Rejected" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Recent Activity */}
         <div style={card}>
-          <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 18px" }}>Recent Activity</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <h3 style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: "0 0 12px" }}>Recent Activity</h3>
+          <div style={{ display: "flex", flexDirection: "column" }}>
             {d.recentActivity.map((item, i) => {
               const dot = activityDot[item.type] || activityDot.upload;
               return (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                  <span style={{ width: "30px", height: "30px", borderRadius: "50%", background: dot.bg, color: dot.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "1px" }}>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "8px 0", borderBottom: i < d.recentActivity.length - 1 ? "1px solid #f8fafc" : "none" }}>
+                  <span style={{ width: "24px", height: "24px", borderRadius: "6px", background: dot.bg, color: dot.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "1px" }}>
                     {activityIcons[item.type]}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: "12.5px", color: "#334155", margin: 0, lineHeight: "1.5" }}>{item.message}</p>
+                    <p style={{ fontSize: "12px", color: "#334155", margin: 0, lineHeight: "1.4" }}>{item.message}</p>
                     <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0 0" }}>{item.time}</p>
                   </div>
-                  <span style={{ fontSize: "10px", fontWeight: "600", padding: "2px 8px", borderRadius: "20px", flexShrink: 0, marginTop: "3px",
+                  <span style={{ fontSize: "10px", fontWeight: "600", padding: "2px 6px", borderRadius: "4px", flexShrink: 0,
                     background: item.status === "success" ? "#f0fdf4" : item.status === "warning" ? "#fff7ed" : "#eff6ff",
-                    color: item.status === "success" ? "#10b981" : item.status === "warning" ? "#f59e0b" : "#3b82f6",
+                    color: item.status === "success" ? "#059669" : item.status === "warning" ? "#d97706" : "#3b82f6",
                   }}>{item.status}</span>
                 </div>
               );
@@ -203,13 +208,16 @@ export default function Dashboard() {
 
       {/* Branch Performance Table */}
       <div style={card}>
-        <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 18px" }}>Branch Performance</h3>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+          <h3 style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: 0 }}>Branch Performance</h3>
+          <span style={{ fontSize: "11px", color: "#94a3b8" }}>{d.branchPerformance.length} branches</span>
+        </div>
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
-                {["Branch", "Customers", "Premium", "Claims", "Claims Ratio"].map((h, i) => (
-                  <th key={h} style={{ textAlign: i === 0 ? "left" : "right", padding: "0 12px 12px", fontSize: "11px", fontWeight: "600", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
+              <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
+                {["Branch", "Customers", "Premium (₹)", "Claims", "Ratio"].map((h, i) => (
+                  <th key={h} style={{ textAlign: i === 0 ? "left" : "right", padding: "0 10px 8px", fontSize: "10px", fontWeight: "600", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -219,13 +227,12 @@ export default function Dashboard() {
                   onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
-                  <td style={{ padding: "13px 12px", fontWeight: "600", color: "#1e293b" }}>{b.branch}</td>
-                  <td style={{ padding: "13px 12px", textAlign: "right", color: "#475569" }}>{b.customers.toLocaleString()}</td>
-                  <td style={{ padding: "13px 12px", textAlign: "right", color: "#475569" }}>${b.premium.toLocaleString()}</td>
-                  <td style={{ padding: "13px 12px", textAlign: "right", color: "#475569" }}>{b.claims}</td>
-                  <td style={{ padding: "13px 12px", textAlign: "right" }}>
-                    <span style={{
-                      padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: "700",
+                  <td style={{ padding: "8px 10px", fontWeight: "500", color: "#1e293b", fontSize: "13px" }}>{b.branch}</td>
+                  <td style={{ padding: "8px 10px", textAlign: "right", color: "#475569", fontVariantNumeric: "tabular-nums" }}>{b.customers.toLocaleString()}</td>
+                  <td style={{ padding: "8px 10px", textAlign: "right", color: "#475569", fontVariantNumeric: "tabular-nums" }}>{b.premium.toLocaleString()}</td>
+                  <td style={{ padding: "8px 10px", textAlign: "right", color: "#475569", fontVariantNumeric: "tabular-nums" }}>{b.claims}</td>
+                  <td style={{ padding: "8px 10px", textAlign: "right" }}>
+                    <span style={{ fontSize: "11px", fontWeight: "600", padding: "2px 7px", borderRadius: "4px",
                       background: parseFloat(b.ratio) < 4 ? "#f0fdf4" : "#fff7ed",
                       color: parseFloat(b.ratio) < 4 ? "#059669" : "#d97706",
                     }}>{b.ratio}</span>

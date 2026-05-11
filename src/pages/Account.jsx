@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Building2, Mail, Phone, MapPin, FileText, Shield, Headphones, Lock, Eye, EyeOff } from "lucide-react";
 
-const card = { background: "white", borderRadius: "16px", padding: "22px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
+const card = { background: "white", borderRadius: "0", padding: "22px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
 
 function InfoRow({ label, value }) {
   return (
@@ -33,9 +33,9 @@ export default function Account() {
       </div>
 
       {/* Profile header card */}
-      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)", borderRadius: "16px", padding: "28px", display: "flex", alignItems: "center", gap: "22px", justifyContent: "space-between" }}>
+      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)", borderRadius: "0", padding: "28px", display: "flex", alignItems: "center", gap: "22px", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
-          <div style={{ width: "64px", height: "64px", borderRadius: "16px", background: "linear-gradient(135deg, #3b82f6, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", fontWeight: "800", color: "white", flexShrink: 0 }}>
+          <div style={{ width: "64px", height: "64px", borderRadius: "0", background: "linear-gradient(135deg, #3b82f6, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", fontWeight: "800", color: "white", flexShrink: 0 }}>
             AF
           </div>
           <div>

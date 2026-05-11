@@ -8,10 +8,14 @@ export default function Layout() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', backgroundColor: '#f1f5f9' }}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Topbar />
-        <main style={{ flex: 1, padding: '28px 32px', overflowY: 'auto' }}>
+      <div style={{ position: 'fixed', left: 0, top: 0, height: '100vh', zIndex: 50 }}>
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      </div>
+      <div style={{ marginLeft: collapsed ? '60px' : '220px', flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflowY: 'auto' }}>
+        <div style={{ position: 'sticky', top: 0, zIndex: 40, backgroundColor: '#f1f5f9' }}>
+          <Topbar />
+        </div>
+        <main style={{ padding: '20px 24px' }}>
           <Outlet />
         </main>
       </div>
