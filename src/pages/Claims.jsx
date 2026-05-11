@@ -51,7 +51,7 @@ export default function Claims() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
         <div style={{ ...card, background: "linear-gradient(140deg,#1e293b,#0f172a)", padding: "24px" }}>
           <p style={{ fontSize: "12px", color: "#64748b", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 6px" }}>Total Amount Paid</p>
-          <p style={{ fontSize: "32px", fontWeight: "800", color: "white", margin: 0, letterSpacing: "-1px" }}>${c.amountPaid.toLocaleString()}</p>
+          <p style={{ fontSize: "32px", fontWeight: "800", color: "white", margin: 0, letterSpacing: "-1px" }}>₹{c.amountPaid.toLocaleString()}</p>
           <p style={{ fontSize: "12px", color: "#10b981", marginTop: "6px" }}>+12.4% Claims settled this period</p>
         </div>
         <div style={{ ...card, background: "linear-gradient(140deg,#1e293b,#0f172a)", padding: "24px" }}>

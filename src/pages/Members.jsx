@@ -56,7 +56,7 @@ export default function Members() {
           { label: "Total Members",   value: d.members.length, color: "#3b82f6", bg: "#eff6ff" },
           { label: "Active",          value: active,           color: "#10b981", bg: "#f0fdf4" },
           { label: "Suspended/Lapsed",value: suspended + lapsed, color: "#f59e0b", bg: "#fff7ed" },
-          { label: "Total Premium",   value: "$" + totalPremium.toLocaleString(), color: "#8b5cf6", bg: "#f5f3ff" },
+          { label: "Total Premium",   value: "₹" + totalPremium.toLocaleString(), color: "#8b5cf6", bg: "#f5f3ff" },
         ].map(({ label, value, color, bg }) => (
           <div key={label} style={{ ...card, padding: "18px", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: color, borderRadius: "16px 16px 0 0" }} />
@@ -127,7 +127,7 @@ export default function Members() {
                       <span style={{ fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "#eff6ff", color: "#3b82f6", fontWeight: "600" }}>{m.plan}</span>
                     </td>
                     <td style={{ padding: "13px 14px", color: "#475569", whiteSpace: "nowrap" }}>{m.enrolledDate}</td>
-                    <td style={{ padding: "13px 14px", color: "#475569", fontWeight: "600" }}>${m.premium.toLocaleString()}</td>
+                    <td style={{ padding: "13px 14px", color: "#475569", fontWeight: "600" }}>₹{m.premium.toLocaleString()}</td>
                     <td style={{ padding: "13px 14px", textAlign: "center" }}>
                       <span style={{ fontWeight: "700", color: m.claims > 3 ? "#ef4444" : m.claims > 0 ? "#f59e0b" : "#10b981" }}>{m.claims}</span>
                     </td>
