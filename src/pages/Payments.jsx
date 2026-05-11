@@ -35,7 +35,7 @@ export default function Payments() {
               <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: grad, display: "inline-block" }}></span>
               <p style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", margin: 0 }}>{label}</p>
             </div>
-            <p style={{ fontSize: "30px", fontWeight: "800", color: "white", margin: 0, letterSpacing: "-1px" }}>${value.toLocaleString()}</p>
+            <p style={{ fontSize: "30px", fontWeight: "800", color: "white", margin: 0, letterSpacing: "-1px" }}>₹{value.toLocaleString()}</p>
           </div>
         ))}
       </div>
@@ -87,7 +87,7 @@ export default function Payments() {
                       <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: PIE_COLORS[i], display: "inline-block" }}></span>
                       <span style={{ fontSize: "12px", color: "#64748b" }}>{item.name}</span>
                     </div>
-                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#0f172a" }}>${item.value.toLocaleString()}</span>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#0f172a" }}>₹{item.value.toLocaleString()}</span>
                   </div>
                   <div style={{ height: "4px", background: "#f1f5f9", borderRadius: "4px", overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${pct}%`, background: PIE_COLORS[i], borderRadius: "4px" }}></div>

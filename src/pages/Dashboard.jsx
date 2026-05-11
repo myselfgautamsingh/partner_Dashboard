@@ -64,7 +64,7 @@ export default function Dashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
         <KPICard label="Total Customers" value={d.summary.totalCustomers.value} trend={d.summary.totalCustomers.trend} icon={Users} color="blue" />
         <KPICard label="Active Policies" value={d.summary.activePolicies.value} trend={d.summary.activePolicies.trend} icon={Shield} color="green" />
-        <KPICard label="Premium Collected" value={d.summary.premiumCollected.value} trend={d.summary.premiumCollected.trend} prefix="$" icon={DollarSign} color="purple" />
+        <KPICard label="Premium Collected" value={d.summary.premiumCollected.value} trend={d.summary.premiumCollected.trend} prefix="₹" icon={DollarSign} color="purple" />
         <KPICard label="Claims Ratio" value={d.summary.claimsRatio.value} trend={d.summary.claimsRatio.trend} suffix="%" icon={Activity} color="orange" />
       </div>
 

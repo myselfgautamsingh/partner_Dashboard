@@ -45,14 +45,14 @@ export default function Branches() {
 
         <div style={card}>
           <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 4px" }}>Premium by Branch</h3>
-          <p style={{ fontSize: "12px", color: "#94a3b8", margin: "0 0 20px" }}>Total premium collected per branch ($)</p>
+          <p style={{ fontSize: "12px", color: "#94a3b8", margin: "0 0 20px" }}>Total premium collected per branch (₹)</p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={d.branchPerformance} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }} barSize={14}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="branch" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} width={110} />
-              <Tooltip {...tip} formatter={(v) => [`$${v.toLocaleString()}`, "Premium"]} />
-              <Bar dataKey="premium" fill="#10b981" radius={[0, 6, 6, 0]} name="Premium ($)" />
+              <Tooltip {...tip} formatter={(v) => [`₹${v.toLocaleString()}`, "Premium"]} />
+              <Bar dataKey="premium" fill="#10b981" radius={[0, 6, 6, 0]} name="Premium (₹)" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -89,7 +89,7 @@ export default function Branches() {
                       </div>
                     </td>
                     <td style={{ padding: "14px", textAlign: "right", color: "#475569" }}>{b.customers.toLocaleString()}</td>
-                    <td style={{ padding: "14px", textAlign: "right", color: "#475569" }}>${b.premium.toLocaleString()}</td>
+                    <td style={{ padding: "14px", textAlign: "right", color: "#475569" }}>₹{b.premium.toLocaleString()}</td>
                     <td style={{ padding: "14px", textAlign: "right", color: "#475569" }}>{b.claims}</td>
                     <td style={{ padding: "14px", textAlign: "right" }}>
                       <span style={{ padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: "700", background: ratioBg, color: ratioColor }}>{b.ratio}</span>
