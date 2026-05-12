@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, FileUp, FileBarChart2, CreditCard,
   Building2, LogOut, ChevronLeft, ChevronRight,
   Package, User, BookOpen, Key, ChevronDown, ChevronUp,
-  Bell, RefreshCw, UserCheck
+  Bell, RefreshCw, UserCheck, FileText, IndianRupee, MessageCircle, Settings
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -18,10 +18,14 @@ const mainNavItems = [
   { to: "/payments", icon: CreditCard, label: "Payments" },
   { to: "/branches", icon: Building2, label: "Branch Performance" },
   { to: "/notifications", icon: Bell, label: "Notifications" },
+  { to: "/reports", icon: FileText, label: "Reports" },
+  { to: "/commission", icon: IndianRupee, label: "Commission" },
+  { to: "/support", icon: MessageCircle, label: "Support" },
 ];
 
 const secondaryNavItems = [
-  { to: "/products", icon: Package,  label: "Products" },
+  { to: "/claim-details", icon: FileBarChart2, label: "Claim Tracker" },
+  { to: "/products", icon: Package,  label: "Plans & Schemes" },
   { to: "/account",  icon: User,     label: "Account" },
   { to: "/api-docs", icon: BookOpen, label: "API Docs" },
   { to: "/api-keys", icon: Key,      label: "API Keys" },
@@ -98,7 +102,7 @@ export default function Sidebar({ collapsed, onToggle }) {
         <div style={{ margin: "8px 0 3px", borderTop: "1px solid rgba(255,255,255,0.05)" }} />
         {!collapsed ? (
           <button onClick={() => setDeveloperExpanded(e => !e)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "5px 8px", background: "none", border: "none", cursor: "pointer" }}>
-            <span style={{ fontSize: "10px", fontWeight: "600", color: "#334155", letterSpacing: "0.1em", textTransform: "uppercase" }}>Developer</span>
+            <span style={{ fontSize: "10px", fontWeight: "600", color: "#334155", letterSpacing: "0.1em", textTransform: "uppercase" }}>Settings</span>
             {developerExpanded ? <ChevronUp size={10} color="#475569" /> : <ChevronDown size={10} color="#475569" />}
           </button>
         ) : <div style={{ height: "6px" }} />}

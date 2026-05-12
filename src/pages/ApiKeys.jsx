@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff, Copy, Check, RefreshCw, Zap, Activity, BarChart2, Shield, X } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-const card = { background: "white", borderRadius: "0", padding: "22px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
+const card = { background: "white", borderRadius: "12px", padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
 const tip = { contentStyle: { borderRadius: "10px", border: "none", boxShadow: "0 8px 30px rgba(0,0,0,0.12)", fontSize: "12px", padding: "10px 14px" } };
 
 const FULL_KEY = "bb_live_xK9mP3tR8zQw2vLnYjFdC6sU1aOp4hBe";
@@ -107,8 +107,7 @@ export default function ApiKeys() {
           { label: "Success Rate",         value: "98.2%", icon: <Shield size={17} />,   bg: "#f0fdf4", color: "#10b981" },
         ].map(({ label, value, icon, bg, color }) => (
           <div key={label} style={{ ...card, padding: "18px", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: color, borderRadius: "16px 16px 0 0" }}></div>
-            <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px" }}>{icon}</div>
+                        <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px" }}>{icon}</div>
             <div style={{ fontSize: "22px", fontWeight: "800", color: "#0f172a" }}>{value}</div>
             <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
           </div>

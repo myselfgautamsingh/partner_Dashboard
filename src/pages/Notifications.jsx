@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Bell, AlertTriangle, CheckCircle, Clock, Upload, RefreshCw, CreditCard, UserPlus } from "lucide-react";
 import { mockDashboardData as d } from "../firebase/mockData";
 
-const card = { background: "white", borderRadius: "16px", padding: "22px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
+const card = { background: "white", borderRadius: "12px", padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
 
 const typeConfig = {
   renewal:    { icon: <RefreshCw size={16} />,  bg: "#eff6ff",  color: "#3b82f6",  label: "Renewal"   },
@@ -60,7 +60,6 @@ export default function Notifications() {
           { label: "Claims Alerts",   value: notifications.filter(n => n.type === "claim").length,     color: "#8b5cf6", bg: "#f5f3ff" },
         ].map(({ label, value, color, bg }) => (
           <div key={label} style={{ ...card, padding: "18px", position: "relative", overflow: "hidden", textAlign: "center" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: color, borderRadius: "16px 16px 0 0" }} />
             <div style={{ fontSize: "28px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.5px" }}>{value}</div>
             <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
           </div>

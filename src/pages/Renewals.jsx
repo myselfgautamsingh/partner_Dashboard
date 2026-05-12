@@ -1,7 +1,7 @@
 import { RefreshCw, AlertTriangle, Clock, CheckCircle, Download } from "lucide-react";
 import { mockDashboardData as d } from "../firebase/mockData";
 
-const card = { background: "white", borderRadius: "16px", padding: "22px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
+const card = { background: "white", borderRadius: "12px", padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
 
 const statusConfig = {
   Critical:  { bg: "#fef2f2",  color: "#dc2626", border: "#fca5a5", icon: <AlertTriangle size={13}/> },
@@ -54,7 +54,6 @@ export default function Renewals() {
           { label: "Expired",              value: expired,  color: "#64748b", bg: "#f8fafc", icon: <RefreshCw size={16}/> },
         ].map(({ label, value, color, bg, icon }) => (
           <div key={label} style={{ ...card, padding: "18px", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: color, borderRadius: "16px 16px 0 0" }} />
             <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px" }}>{icon}</div>
             <div style={{ fontSize: "28px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.5px" }}>{value}</div>
             <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>

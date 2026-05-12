@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Users, Search, Filter, Download, Eye } from "lucide-react";
 import { mockDashboardData as d } from "../firebase/mockData";
 
-const card = { background: "white", borderRadius: "16px", padding: "22px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
+const card = { background: "white", borderRadius: "12px", padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
 
 const statusStyle = {
   Active:    { bg: "#f0fdf4", color: "#059669" },
@@ -16,23 +16,26 @@ export default function Members() {
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterBranch, setFilterBranch] = useState("All");
 
-  const plans    = ["All", ...new Set(d.members.map(m => m.plan))];
-  const statuses = ["All", "Active", "Suspended", "Lapsed"];
-  const branches = ["All", ...new Set(d.members.map(m => m.branch))];
+  // Ensure members data exists
+  const members = d?.members || [];
 
-  const filtered = d.members.filter(m => {
+  const plans    = ["All", ...new Set(members.map(m => m.plan).filter(Boolean))];
+  const statuses = ["All", "Active", "Suspended", "Lapsed"];
+  const branches = ["All", ...new Set(members.map(m => m.branch).filter(Boolean))];
+
+  const filtered = members.filter(m => {
     const q = search.toLowerCase();
-    const matchSearch = m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q);
+    const matchSearch = m.name?.toLowerCase().includes(q) || m.id?.toLowerCase().includes(q);
     const matchPlan   = filterPlan   === "All" || m.plan   === filterPlan;
     const matchStatus = filterStatus === "All" || m.status === filterStatus;
     const matchBranch = filterBranch === "All" || m.branch === filterBranch;
     return matchSearch && matchPlan && matchStatus && matchBranch;
   });
 
-  const active    = d.members.filter(m => m.status === "Active").length;
-  const suspended = d.members.filter(m => m.status === "Suspended").length;
-  const lapsed    = d.members.filter(m => m.status === "Lapsed").length;
-  const totalPremium = d.members.reduce((s, m) => s + m.premium, 0);
+  const active    = members.filter(m => m.status === "Active").length;
+  const suspended = members.filter(m => m.status === "Suspended").length;
+  const lapsed    = members.filter(m => m.status === "Lapsed").length;
+  const totalPremium = members.reduce((s, m) => s + (m.premium || 0), 0);
 
   const inputStyle = { height: "38px", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "0 12px", fontSize: "13px", color: "#334155", background: "white", outline: "none", cursor: "pointer" };
 
@@ -53,13 +56,12 @@ export default function Members() {
       {/* Summary tiles */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px" }}>
         {[
-          { label: "Total Members",   value: d.members.length, color: "#3b82f6", bg: "#eff6ff" },
+          { label: "Total Members",   value: members.length, color: "#3b82f6", bg: "#eff6ff" },
           { label: "Active",          value: active,           color: "#10b981", bg: "#f0fdf4" },
           { label: "Suspended/Lapsed",value: suspended + lapsed, color: "#f59e0b", bg: "#fff7ed" },
           { label: "Total Premium",   value: "₹" + totalPremium.toLocaleString(), color: "#8b5cf6", bg: "#f5f3ff" },
         ].map(({ label, value, color, bg }) => (
-          <div key={label} style={{ ...card, padding: "18px", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: color, borderRadius: "16px 16px 0 0" }} />
+          <div key={label} style={{ ...card, padding: "18px" }}>
             <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px" }}>
               <Users size={16} />
             </div>
@@ -88,7 +90,7 @@ export default function Members() {
               {branches.map(b => <option key={b}>{b}</option>)}
             </select>
           </div>
-          <span style={{ fontSize: "12px", color: "#94a3b8" }}>{filtered.length} of {d.members.length} members</span>
+          <span style={{ fontSize: "12px", color: "#94a3b8" }}>{filtered.length} of {members.length} members</span>
         </div>
       </div>
 
@@ -105,35 +107,35 @@ export default function Members() {
             </thead>
             <tbody>
               {filtered.map((m, i) => {
-                const st = statusStyle[m.status] || statusStyle.Active;
-                const initials = m.name.split(" ").map(w => w[0]).join("").slice(0, 2);
+                const st = statusStyle[m?.status] || statusStyle.Active;
+                const initials = m?.name?.split(" ")?.map(w => w[0])?.join("")?.slice(0, 2) || "?";
                 return (
                   <tr key={i} style={{ borderBottom: "1px solid #f8fafc", cursor: "default", transition: "background 0.1s" }}
                     onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   >
-                    <td style={{ padding: "13px 14px", color: "#64748b", fontFamily: "monospace", fontSize: "12px" }}>{m.id}</td>
+                    <td style={{ padding: "13px 14px", color: "#64748b", fontFamily: "monospace", fontSize: "12px" }}>{m?.id || "—"}</td>
                     <td style={{ padding: "13px 14px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "linear-gradient(135deg,#3b82f6,#6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: "700", flexShrink: 0 }}>{initials}</div>
                         <div>
-                          <div style={{ fontWeight: "600", color: "#1e293b" }}>{m.name}</div>
-                          <div style={{ fontSize: "11px", color: "#94a3b8" }}>DOB: {m.dob}</div>
+                          <div style={{ fontWeight: "600", color: "#1e293b" }}>{m?.name || "Unknown"}</div>
+                          <div style={{ fontSize: "11px", color: "#94a3b8" }}>DOB: {m?.dob || "—"}</div>
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: "13px 14px", color: "#475569" }}>{m.branch}</td>
+                    <td style={{ padding: "13px 14px", color: "#475569" }}>{m?.branch || "—"}</td>
                     <td style={{ padding: "13px 14px" }}>
-                      <span style={{ fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "#eff6ff", color: "#3b82f6", fontWeight: "600" }}>{m.plan}</span>
+                      <span style={{ fontSize: "11px", padding: "3px 9px", borderRadius: "20px", background: "#eff6ff", color: "#3b82f6", fontWeight: "600" }}>{m?.plan || "—"}</span>
                     </td>
-                    <td style={{ padding: "13px 14px", color: "#475569", whiteSpace: "nowrap" }}>{m.enrolledDate}</td>
-                    <td style={{ padding: "13px 14px", color: "#475569", fontWeight: "600" }}>₹{m.premium.toLocaleString()}</td>
+                    <td style={{ padding: "13px 14px", color: "#475569", whiteSpace: "nowrap" }}>{m?.enrolledDate || "—"}</td>
+                    <td style={{ padding: "13px 14px", color: "#475569", fontWeight: "600" }}>₹{(m?.premium || 0).toLocaleString()}</td>
                     <td style={{ padding: "13px 14px", textAlign: "center" }}>
-                      <span style={{ fontWeight: "700", color: m.claims > 3 ? "#ef4444" : m.claims > 0 ? "#f59e0b" : "#10b981" }}>{m.claims}</span>
+                      <span style={{ fontWeight: "700", color: (m?.claims || 0) > 3 ? "#ef4444" : (m?.claims || 0) > 0 ? "#f59e0b" : "#10b981" }}>{m?.claims || 0}</span>
                     </td>
-                    <td style={{ padding: "13px 14px", color: "#94a3b8", fontSize: "12px" }}>{m.lastClaim}</td>
+                    <td style={{ padding: "13px 14px", color: "#94a3b8", fontSize: "12px" }}>{m?.lastClaim || "—"}</td>
                     <td style={{ padding: "13px 14px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px", background: st.bg, color: st.color }}>{m.status}</span>
+                      <span style={{ fontSize: "11px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px", background: st.bg, color: st.color }}>{m?.status || "Active"}</span>
                     </td>
                     <td style={{ padding: "13px 14px" }}>
                       <button style={{ background: "none", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "5px 10px", cursor: "pointer", color: "#64748b", display: "flex", alignItems: "center", gap: "5px", fontSize: "11px" }}>
@@ -143,8 +145,11 @@ export default function Members() {
                   </tr>
                 );
               })}
-              {filtered.length === 0 && (
+              {filtered.length === 0 && members.length > 0 && (
                 <tr><td colSpan={10} style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>No members match your filters.</td></tr>
+              )}
+              {members.length === 0 && (
+                <tr><td colSpan={10} style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>No members data available. Check console for errors.</td></tr>
               )}
             </tbody>
           </table>

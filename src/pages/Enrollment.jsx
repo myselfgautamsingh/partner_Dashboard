@@ -2,7 +2,7 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { Users, Shield, FileUp, XCircle, CreditCard, Clock } from "lucide-react";
 import { mockDashboardData as d } from "../firebase/mockData";
 
-const card = { background: "white", borderRadius: "8px", padding: "16px 18px", boxShadow: "0 1px 2px rgba(16,24,40,0.06)", border: "1px solid #e2e8f0" };
+const card = { background: "white", borderRadius: "12px", padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
 const tip = { contentStyle: { borderRadius: "6px", border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", fontSize: "12px", padding: "8px 12px" } };
 
 const kpis = [

@@ -1,19 +1,20 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { Upload, CheckCircle, XCircle, Clock, CreditCard, FileUp, X, AlertCircle, Download, RefreshCw } from "lucide-react";
-import { mockDashboardData as d } from "../firebase/mockData";
+import { Upload, CheckCircle, XCircle, Clock, CreditCard, FileUp, X, AlertCircle, Download, RefreshCw, FileText } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { uploadFileToS3, getUploadLog, getPartnerTemplate } from "../api/client";
 
-const card = { background: "white", borderRadius: "0", padding: "22px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
+const card = { background: "white", borderRadius: "12px", padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
 const tip = { contentStyle: { borderRadius: "10px", border: "none", boxShadow: "0 8px 30px rgba(0,0,0,0.12)", fontSize: "12px", padding: "10px 14px" } };
 
-const mockErrors = [
-  { row: 4,  memberId: "MBR-1042", name: "Priya Sharma",    reason: "Invalid email format",            status: "Rejected" },
-  { row: 9,  memberId: "MBR-1051", name: "Arjun Mehta",     reason: "Duplicate member ID",             status: "Duplicate" },
-  { row: 15, memberId: "MBR-1063", name: "Kavya Reddy",     reason: "Missing required field: DOB",     status: "Rejected" },
-  { row: 22, memberId: "MBR-1078", name: "Rohan Verma",     reason: "Invalid plan code",               status: "Warning" },
-  { row: 31, memberId: "MBR-1091", name: "Sneha Iyer",      reason: "Duplicate member ID",             status: "Duplicate" },
-  { row: 38, memberId: "MBR-1104", name: "Vikram Nair",     reason: "Missing required field: Gender",  status: "Warning" },
-];
+const partnerConfig = {
+  code: import.meta.env.VITE_PARTNER_CODE || "BHARATCARE001",
+  name: import.meta.env.VITE_PARTNER_NAME || "BharatCare Finance Ltd",
+  // Each DP gets their own folder under dispartnerfiles/
+  // Format: dispartnerfiles/{DP_NAME}/
+  infilePath: import.meta.env.VITE_PARTNER_INFILE_PATH || "dispartnerfiles/BharatCare/",
+  talendBatchPath: "/talend/enrollment/batch",
+};
 
 const statusColors = {
   Rejected:  { bg: "#fef2f2", color: "#dc2626" },
@@ -21,19 +22,30 @@ const statusColors = {
   Warning:   { bg: "#fefce8", color: "#ca8a04" },
 };
 
-function UploadSection({ onReset }) {
+function UploadSection({ onReset, onUploadSuccess }) {
+  const { user } = useAuth();
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState("idle"); // idle | uploading | processing | completed | failed
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState("");
+  const [error, setError] = useState(null);
+  const [uploadResult, setUploadResult] = useState(null);
   const inputRef = useRef();
 
   const acceptFile = (f) => {
     if (!f) return;
     const ext = f.name.split(".").pop().toLowerCase();
-    if (!["csv", "xlsx"].includes(ext)) { alert("Only .csv and .xlsx files are accepted."); return; }
+    if (!["csv"].includes(ext)) { 
+      setError("Only .csv files are accepted."); 
+      return; 
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      setError("File size must be less than 10MB");
+      return;
+    }
     setFile(f);
+    setError(null);
   };
 
   const handleDrop = useCallback((e) => {
@@ -41,37 +53,109 @@ function UploadSection({ onReset }) {
     acceptFile(e.dataTransfer.files[0]);
   }, []);
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
-    setStatus("uploading"); setProgress(0); setPhase("Uploading");
-    let p = 0;
-    const interval = setInterval(() => {
-      p += 5;
-      setProgress(p);
-      if (p >= 100) {
-        clearInterval(interval);
-        setPhase("Processing"); setStatus("processing"); setProgress(0);
-        let p2 = 0;
-        const interval2 = setInterval(() => {
-          p2 += 8;
-          setProgress(p2);
-          if (p2 >= 60) { setPhase("Validating"); }
-          if (p2 >= 100) {
-            clearInterval(interval2);
-            setStatus("completed"); setProgress(100);
-          }
-        }, 80);
+    setStatus("uploading"); 
+    setProgress(0); 
+    setPhase("Uploading");
+    setError(null);
+
+    try {
+      // Get Firebase auth token
+      const token = await user.getIdToken();
+      
+      // Prepare metadata matching 1Care format
+      const metadata = {
+        DispartnerName: partnerConfig.name,
+        uploadedfilename: file.name,
+        filetype: "enrollment",
+        infilePath: partnerConfig.infilePath,
+      };
+
+      // Upload via 1Care API
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://internal.1carehealth.co/api";
+      
+      const response = await fetch(`${apiUrl}/FileUpload/UploadFileData`, {
+        method: "POST",
+        headers: {
+          "TalendFileUploadData": JSON.stringify(metadata),
+          "X-Amzn-Oidc-Accesstoken": token,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Upload failed");
       }
-    }, 100);
+
+      const result = await response.json();
+      setUploadResult(result);
+      setStatus("completed");
+      setProgress(100);
+      setPhase("Completed");
+      
+      if (onUploadSuccess) onUploadSuccess();
+    } catch (err) {
+      setError(err.message || "Upload failed");
+      setStatus("failed");
+      setProgress(0);
+    }
   };
 
-  const handleClear = () => { setFile(null); setStatus("idle"); setProgress(0); setPhase(""); if (onReset) onReset(); };
+  const handleClear = () => { 
+    setFile(null); 
+    setStatus("idle"); 
+    setProgress(0); 
+    setPhase(""); 
+    setError(null);
+    setUploadResult(null);
+    if (onReset) onReset(); 
+  };
 
-  const handleDownloadRejected = () => {
-    const rows = ["Row,MemberID,Name,Reason,Status", ...mockErrors.map(e => `${e.row},${e.memberId},${e.name},"${e.reason}",${e.status}`)];
-    const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+  // Fallback template headers based on 1Care enrollment format
+  const fallbackTemplate = `srno,totalpremium,constructtype,tenuremonths,bitlycoipdf,customerlanguage,minsureproductcode,plancode,loanaccountno,proposalno,polstartdate,name,gender,dateofbirth,aadharpanvoterid,address,addressline2,city,region,country,pincode,occupation,mobilenumber,emailid,selfnomineename,selfnomineegender,selfnomineedateofbirth,selfnomineerelationship,spouseuniqueid,spousename,spousegender,spousedateofbirth,spouseaadharpanvoterid,spouserelationship,spouseoccupation,spousemobilenumber,spouseemailid,nomineespousename,nomineespousegender,nomineespousedateofbirth,nomineespouserelationship,dependentname1,dependentgender1,dependentdob1,dependentrelation1,dependentuniqueid1,dependentname2,dependentgender2,dependentdob2,dependentrelation2,dependentuniqueid2,dependentname3,dependentgender3,dependentdob3,dependentrelation3,dependentuniqueid3,dependentname4,dependentgender4,dependentdob4,dependentrelation4,dependentuniqueid4,dependentname5,dependentgender5,dependentdob5,dependentrelation5,dependentuniqueid5,dispartnercode,dispartnername,policynumber,dateprocessed,riskinsurercode,branchname,branchcode,memberid
+1,3500,Reducing,120,,English,GCLP,CLB,LN-001,PROP-001,2026-05-15,Rajesh Kumar,Male,1985-03-15,ABCDE1234F,123 Main St,Block A,Mumbai,Maharashtra,India,400001,Software Engineer,9876543210,rajesh@example.com,Priya Kumar,Female,1987-06-20,Spouse,,Priya Kumar,Female,1987-06-20,ABCDE5678G,Spouse,Teacher,9876543211,priya@example.com,Rajesh Kumar,Male,1985-03-15,Spouse,Rahul Kumar,Male,2012-08-10,Child,ABCDE9012H,,,,,,,,,,,,,,,,BHARATCARE001,BharatCare Finance Ltd,,,,Mumbai Main,BC-MUM,MBR-BC-0001`;
+
+  const handleDownloadTemplate = async () => {
+    try {
+      // Try API first
+      const apiUrl = import.meta.env.VITE_API_BASE_URL;
+      if (apiUrl && apiUrl !== "https://internal.1carehealth.co/api") {
+        const response = await fetch(`${apiUrl}/FileUpload/GetDispartnerTemplate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ Dispartner: partnerConfig.name }),
+        });
+        const result = await response.json();
+        
+        if (result.CsvString) {
+          downloadCsv(result.CsvString, `${partnerConfig.name}_template.csv`);
+          return;
+        }
+      }
+      
+      // Fallback to local template
+      downloadCsv(fallbackTemplate, `${partnerConfig.name}_enrollment_template.csv`);
+    } catch (err) {
+      console.error("Template download error:", err);
+      // Use fallback on any error
+      downloadCsv(fallbackTemplate, `${partnerConfig.name}_enrollment_template.csv`);
+    }
+  };
+
+  const downloadCsv = (csvContent, filename) => {
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "rejected_records.csv"; a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
@@ -80,9 +164,32 @@ function UploadSection({ onReset }) {
 
   return (
     <>
+      {/* Template download */}
+      <div style={{ ...card, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0 }}>Download Upload Template</h3>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: "4px 0 0" }}>Get the correct CSV format for your data</p>
+          <p style={{ fontSize: "11px", color: "#94a3b8", margin: "6px 0 0", fontFamily: "monospace" }}>
+            S3: 1carehealth.talend/{partnerConfig.infilePath}Upload Format/
+          </p>
+        </div>
+        <button 
+          onClick={handleDownloadTemplate}
+          style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 18px", background: "#0f172a", color: "white", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}
+        >
+          <FileText size={14} /> Download Template
+        </button>
+      </div>
+
       {/* Drag & Drop Zone */}
       <div style={card}>
         <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 16px" }}>Upload Member Data File</h3>
+        {error && (
+          <div style={{ padding: "12px 16px", background: "#fef2f2", borderRadius: "8px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <AlertCircle size={16} color="#ef4444" />
+            <span style={{ fontSize: "13px", color: "#dc2626" }}>{error}</span>
+          </div>
+        )}
         <div
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
@@ -104,9 +211,9 @@ function UploadSection({ onReset }) {
               <div style={{ width: "52px", height: "52px", borderRadius: "14px", background: "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", color: "#3b82f6" }}>
                 <Upload size={24} />
               </div>
-              <p style={{ fontSize: "14px", fontWeight: "600", color: "#0f172a", margin: 0 }}>Drag and drop your CSV or Excel file here</p>
+              <p style={{ fontSize: "14px", fontWeight: "600", color: "#0f172a", margin: 0 }}>Drag and drop your CSV file here</p>
               <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0 }}>or click to browse</p>
-              <p style={{ fontSize: "11px", color: "#cbd5e1", margin: 0 }}>Accepted formats: .csv, .xlsx</p>
+              <p style={{ fontSize: "11px", color: "#cbd5e1", margin: 0 }}>Accepted format: .csv (max 10MB)</p>
             </>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: "14px", width: "100%", maxWidth: "480px" }}>
@@ -183,63 +290,24 @@ function UploadSection({ onReset }) {
       )}
 
       {/* Results */}
-      {status === "completed" && (
+      {status === "completed" && uploadResult && (
         <div style={card}>
-          <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 16px" }}>Upload Results</h3>
-
-          {/* Summary pills */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" }}>
-            {[
-              { label: "Total Records", value: 248, bg: "#eff6ff", color: "#3b82f6" },
-              { label: "Successful",    value: 242, bg: "#f0fdf4", color: "#10b981" },
-              { label: "Rejected",      value: 4,   bg: "#fef2f2", color: "#ef4444" },
-              { label: "Duplicate",     value: 2,   bg: "#fff7ed", color: "#ea580c" },
-            ].map(({ label, value, bg, color }) => (
-              <div key={label} style={{ background: bg, borderRadius: "10px", padding: "14px 16px", textAlign: "center" }}>
-                <div style={{ fontSize: "22px", fontWeight: "800", color }}>{value}</div>
-                <div style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", marginTop: "2px" }}>{label}</div>
-              </div>
-            ))}
+          <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 16px" }}>Upload Successful</h3>
+          
+          <div style={{ padding: "16px", background: "#f0fdf4", borderRadius: "10px", marginBottom: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+              <CheckCircle size={20} color="#10b981" />
+              <span style={{ fontSize: "14px", fontWeight: "600", color: "#059669" }}>File uploaded to S3 successfully</span>
+            </div>
+            <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
+              Your file has been uploaded and will be processed by Talend shortly. 
+              Check the upload history below for processing status.
+            </p>
           </div>
 
-          {/* Error table */}
-          <h4 style={{ fontSize: "13px", fontWeight: "700", color: "#0f172a", margin: "0 0 12px", display: "flex", alignItems: "center", gap: "6px" }}>
-            <AlertCircle size={14} color="#ef4444" /> Error Report
-          </h4>
-          <div style={{ overflowX: "auto", borderRadius: "10px", border: "1px solid #f1f5f9" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
-              <thead>
-                <tr style={{ background: "#f8fafc" }}>
-                  {["Row #", "Member ID", "Name", "Error Reason", "Status"].map(h => (
-                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: "600", color: "#64748b", whiteSpace: "nowrap", borderBottom: "1px solid #f1f5f9" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {mockErrors.map((row, i) => (
-                  <tr key={i} style={{ borderBottom: i < mockErrors.length - 1 ? "1px solid #f8fafc" : "none" }}>
-                    <td style={{ padding: "10px 14px", color: "#94a3b8", fontWeight: "600" }}>{row.row}</td>
-                    <td style={{ padding: "10px 14px", color: "#475569", fontFamily: "monospace", fontSize: "11px" }}>{row.memberId}</td>
-                    <td style={{ padding: "10px 14px", color: "#0f172a", fontWeight: "500" }}>{row.name}</td>
-                    <td style={{ padding: "10px 14px", color: "#64748b" }}>{row.reason}</td>
-                    <td style={{ padding: "10px 14px" }}>
-                      <span style={{ fontSize: "10px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px", background: statusColors[row.status].bg, color: statusColors[row.status].color }}>
-                        {row.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Action buttons */}
-          <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
-            <button onClick={handleDownloadRejected} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 18px", background: "#0f172a", color: "white", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
-              <Download size={14} /> Download Rejected Records
-            </button>
-            <button onClick={handleClear} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 18px", background: "none", color: "#3b82f6", border: "1px solid #3b82f6", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
-              <RefreshCw size={14} /> Re-upload Fixed File
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button onClick={handleClear} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 18px", background: "#0f172a", color: "white", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
+              <Upload size={14} /> Upload Another File
             </button>
           </div>
         </div>
@@ -248,46 +316,157 @@ function UploadSection({ onReset }) {
   );
 }
 
-const weeklyData = [
-  { week: "Week 1", processed: 3820, rejected: 142 },
-  { week: "Week 2", processed: 4210, rejected: 168 },
-  { week: "Week 3", processed: 3650, rejected: 120 },
-  { week: "Week 4", processed: 3140, rejected: 202 },
-];
+const formatDate = (dateString) => {
+  if (!dateString) return "—";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+};
 
-const tiles = [
-  { label: "Files Uploaded",   value: d.uploadStats.filesUploaded,               bg: "#eff6ff", color: "#3b82f6", icon: <FileUp size={18} /> },
-  { label: "Total Records",    value: d.uploadStats.uploadedRecords.toLocaleString(), bg: "#f0fdf4", color: "#10b981", icon: <CheckCircle size={18} /> },
-  { label: "Rejected Records", value: d.uploadStats.rejectedRecords,              bg: "#fef2f2", color: "#ef4444", icon: <XCircle size={18} /> },
-  { label: "Payments Done",    value: d.uploadStats.paymentsDone,                 bg: "#f5f3ff", color: "#8b5cf6", icon: <CreditCard size={18} /> },
-  { label: "Pending Payment",  value: d.uploadStats.pendingPayment,               bg: "#fff7ed", color: "#f59e0b", icon: <Clock size={18} /> },
-];
+function UploadHistoryTable({ uploads, loading }) {
+  if (loading) {
+    return <div style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>Loading upload history...</div>;
+  }
 
-const progressBars = [
-  { label: "Successfully Processed", value: d.uploadStats.uploadedRecords - d.uploadStats.rejectedRecords, total: d.uploadStats.uploadedRecords, color: "#10b981", bg: "#f0fdf4", textColor: "#059669" },
-  { label: "Rejected Records",        value: d.uploadStats.rejectedRecords, total: d.uploadStats.uploadedRecords, color: "#ef4444", bg: "#fef2f2", textColor: "#dc2626" },
-  { label: "Payments Done",           value: d.uploadStats.paymentsDone,    total: d.uploadStats.uploadedRecords, color: "#6366f1", bg: "#eff6ff", textColor: "#4f46e5" },
-  { label: "Pending Payment",         value: d.uploadStats.pendingPayment,  total: d.uploadStats.uploadedRecords, color: "#f59e0b", bg: "#fff7ed", textColor: "#d97706" },
-];
+  if (!uploads || uploads.length === 0) {
+    return <div style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>No uploads found</div>;
+  }
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "completed":
+      case "processed":
+        return { bg: "#f0fdf4", color: "#059669" };
+      case "processing":
+      case "fileuploaded":
+        return { bg: "#eff6ff", color: "#3b82f6" };
+      case "failed":
+      case "error":
+        return { bg: "#fef2f2", color: "#dc2626" };
+      default:
+        return { bg: "#fff7ed", color: "#d97706" };
+    }
+  };
+
+  return (
+    <div style={{ overflowX: "auto" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+        <thead>
+          <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+            {["Date", "File Name", "Partner", "Total", "Uploaded", "Rejected", "Duplicate", "Pending", "Premium", "Status"].map(h => (
+              <th key={h} style={{ padding: "12px 14px", textAlign: "left", fontWeight: "600", color: "#64748b", whiteSpace: "nowrap", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {uploads.map((upload, i) => {
+            const statusColors = getStatusColor(upload.FileStatus);
+            return (
+              <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <td style={{ padding: "12px 14px", color: "#475569" }}>{formatDate(upload.Date)}</td>
+                <td style={{ padding: "12px 14px", color: "#0f172a", fontWeight: "500" }}>{upload.FileName || upload.IntialFileName}</td>
+                <td style={{ padding: "12px 14px", color: "#64748b" }}>{upload.DispartnerName}</td>
+                <td style={{ padding: "12px 14px", color: "#475569", textAlign: "right" }}>{upload.TotalRecords?.toLocaleString() || 0}</td>
+                <td style={{ padding: "12px 14px", color: "#10b981", textAlign: "right", fontWeight: "500" }}>{upload.UploadedFileRecords?.toLocaleString() || 0}</td>
+                <td style={{ padding: "12px 14px", color: "#ef4444", textAlign: "right" }}>{upload.RejectedFileRecords?.toLocaleString() || 0}</td>
+                <td style={{ padding: "12px 14px", color: "#f59e0b", textAlign: "right" }}>{upload.DuplicateFileRecords?.toLocaleString() || 0}</td>
+                <td style={{ padding: "12px 14px", color: "#64748b", textAlign: "right" }}>{upload.PendingRecords?.toLocaleString() || 0}</td>
+                <td style={{ padding: "12px 14px", color: "#475569", textAlign: "right", fontWeight: "600" }}>₹{upload.TotalPremium || 0}</td>
+                <td style={{ padding: "12px 14px" }}>
+                  <span style={{ fontSize: "11px", fontWeight: "600", padding: "3px 10px", borderRadius: "20px", background: statusColors.bg, color: statusColors.color, textTransform: "capitalize" }}>
+                    {upload.FileStatus || "Processing"}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default function Uploads() {
+  const [uploads, setUploads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    filesUploaded: 0,
+    totalRecords: 0,
+    rejectedRecords: 0,
+    paymentsDone: 0,
+    pendingPayment: 0,
+  });
+
+  // Fetch upload history
+  const fetchUploadHistory = async () => {
+    try {
+      const result = await getUploadLog(partnerConfig.code);
+      if (result.Status && result.Details) {
+        setUploads(result.Details);
+        
+        // Calculate stats
+        const totals = result.Details.reduce((acc, upload) => ({
+          filesUploaded: acc.filesUploaded + 1,
+          totalRecords: acc.totalRecords + (upload.TotalRecords || 0),
+          rejectedRecords: acc.rejectedRecords + (upload.RejectedFileRecords || 0),
+          paymentsDone: acc.paymentsDone + (upload.UploadedFileRecords || 0),
+          pendingPayment: acc.pendingPayment + (upload.PendingRecords || 0),
+        }), { filesUploaded: 0, totalRecords: 0, rejectedRecords: 0, paymentsDone: 0, pendingPayment: 0 });
+        
+        setStats(totals);
+      }
+    } catch (err) {
+      console.error("Failed to fetch upload history:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUploadHistory();
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchUploadHistory, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const tiles = [
+    { label: "Files Uploaded",   value: stats.filesUploaded,               bg: "#eff6ff", color: "#3b82f6", icon: <FileUp size={18} /> },
+    { label: "Total Records",    value: stats.totalRecords.toLocaleString(), bg: "#f0fdf4", color: "#10b981", icon: <CheckCircle size={18} /> },
+    { label: "Rejected Records", value: stats.rejectedRecords,              bg: "#fef2f2", color: "#ef4444", icon: <XCircle size={18} /> },
+    { label: "Payments Done",    value: stats.paymentsDone,                 bg: "#f5f3ff", color: "#8b5cf6", icon: <CreditCard size={18} /> },
+    { label: "Pending Payment",  value: stats.pendingPayment,               bg: "#fff7ed", color: "#f59e0b", icon: <Clock size={18} /> },
+  ];
+
+  const progressBars = [
+    { label: "Successfully Processed", value: stats.totalRecords - stats.rejectedRecords, total: stats.totalRecords || 1, color: "#10b981", bg: "#f0fdf4", textColor: "#059669" },
+    { label: "Rejected Records",        value: stats.rejectedRecords, total: stats.totalRecords || 1, color: "#ef4444", bg: "#fef2f2", textColor: "#dc2626" },
+    { label: "Payments Done",           value: stats.paymentsDone,    total: stats.totalRecords || 1, color: "#6366f1", bg: "#eff6ff", textColor: "#4f46e5" },
+    { label: "Pending Payment",         value: stats.pendingPayment,  total: stats.totalRecords || 1, color: "#f59e0b", bg: "#fff7ed", textColor: "#d97706" },
+  ];
+
+  // Calculate weekly data from uploads
+  const weeklyData = [
+    { week: "Week 1", processed: uploads.slice(0, 7).reduce((sum, u) => sum + (u.UploadedFileRecords || 0), 0), rejected: uploads.slice(0, 7).reduce((sum, u) => sum + (u.RejectedFileRecords || 0), 0) },
+    { week: "Week 2", processed: uploads.slice(7, 14).reduce((sum, u) => sum + (u.UploadedFileRecords || 0), 0), rejected: uploads.slice(7, 14).reduce((sum, u) => sum + (u.RejectedFileRecords || 0), 0) },
+    { week: "Week 3", processed: uploads.slice(14, 21).reduce((sum, u) => sum + (u.UploadedFileRecords || 0), 0), rejected: uploads.slice(14, 21).reduce((sum, u) => sum + (u.RejectedFileRecords || 0), 0) },
+    { week: "Week 4", processed: uploads.slice(21, 28).reduce((sum, u) => sum + (u.UploadedFileRecords || 0), 0), rejected: uploads.slice(21, 28).reduce((sum, u) => sum + (u.RejectedFileRecords || 0), 0) },
+  ];
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
 
       {/* Header */}
       <div>
         <h2 style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a", margin: 0 }}>Data Uploads</h2>
-        <p style={{ fontSize: "13px", color: "#94a3b8", marginTop: "3px" }}>Batch file upload tracking and processing status</p>
+        <p style={{ fontSize: "13px", color: "#94a3b8", marginTop: "3px" }}>Batch file upload to S3 → Talend processing → Enrollment</p>
       </div>
 
       {/* Upload Zone */}
-      <UploadSection />
+      <UploadSection onUploadSuccess={fetchUploadHistory} />
 
       {/* KPI tiles */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "14px" }}>
         {tiles.map(({ label, value, bg, color, icon }) => (
-          <div key={label} style={{ ...card, padding: "18px", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: color, borderRadius: "16px 16px 0 0" }}></div>
+          <div key={label} style={{ ...card, padding: "18px" }}>
             <div style={{ width: "38px", height: "38px", borderRadius: "11px", background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px" }}>{icon}</div>
             <div style={{ fontSize: "24px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.5px" }}>{value}</div>
             <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
@@ -340,27 +519,18 @@ export default function Uploads() {
         </div>
       </div>
 
-      {/* Recent upload activity */}
+      {/* Upload History */}
       <div style={card}>
-        <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 18px" }}>Recent Upload Activity</h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {d.recentActivity.filter(a => a.type === "upload" || a.type === "enrollment").map((item, i) => {
-            const colors = { success: { bg: "#f0fdf4", color: "#10b981", pill: "#dcfce7", pillText: "#059669" }, warning: { bg: "#fff7ed", color: "#f59e0b", pill: "#fef3c7", pillText: "#d97706" }, pending: { bg: "#eff6ff", color: "#3b82f6", pill: "#dbeafe", pillText: "#2563eb" } };
-            const c = colors[item.status] || colors.pending;
-            return (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", borderRadius: "12px", background: "#f8fafc", border: "1px solid #f1f5f9" }}>
-                <span style={{ width: "34px", height: "34px", borderRadius: "10px", background: c.bg, color: c.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Upload size={14} />
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: "13px", color: "#334155", margin: 0, fontWeight: "500" }}>{item.message}</p>
-                  <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0 0" }}>{item.time}</p>
-                </div>
-                <span style={{ fontSize: "10px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px", background: c.pill, color: c.pillText, flexShrink: 0, textTransform: "capitalize" }}>{item.status}</span>
-              </div>
-            );
-          })}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
+          <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0 }}>Upload History</h3>
+          <button 
+            onClick={fetchUploadHistory}
+            style={{ display: "flex", alignItems: "center", gap: "5px", padding: "6px 12px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px", fontSize: "12px", color: "#475569", cursor: "pointer" }}
+          >
+            <RefreshCw size={14} /> Refresh
+          </button>
         </div>
+        <UploadHistoryTable uploads={uploads} loading={loading} />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
 
-const card = { background: "white", borderRadius: "0", padding: "22px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
+const card = { background: "white", borderRadius: "12px", padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" };
 
 const methodColors = {
   POST:   { bg: "#f0fdf4", color: "#10b981" },
